@@ -21,22 +21,20 @@ function App() {
 
   const navigate = useNavigate();
 
-    const verifyUser = async () => {
+  // ✅ ONLY verify user (NO navigation here)
+  const verifyUser = async () => {
     try {
       const res = await Axios.get("/user/verify");
 
       if (res.data.status) {
         setUser(res.data.user);
         setIsLoggedIn(true);
-
-        // 🔥 ROLE BASED NAVIGATION HERE
-        if (res.data.user.role === "admin") {
-          navigate("/admin/users");
-        } else {
-          navigate("/home");
-        }
+      } else {
+        setUser(null);
+        setIsLoggedIn(false);
       }
-    } catch (error) {
+    } catch (er) {
+      console.log(er)
       setUser(null);
       setIsLoggedIn(false);
     }
@@ -47,7 +45,12 @@ function App() {
   }, []);
 
   const logout = async () => {
-    await Axios.post("/user/logout");
+    try {
+      await Axios.post("/user/logout");
+    } catch (error) {
+      console.log(error);
+    }
+
     setUser(null);
     setIsLoggedIn(false);
     navigate("/");
@@ -63,8 +66,14 @@ function App() {
 
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Login onlogin={verifyUser} />} />
-        <Route path="/signup" element={<Signup onlogin={verifyUser} />} />
+        <Route
+          path="/"
+          element={<Login onLogin={verifyUser} />}
+        />
+        <Route
+          path="/signup"
+          element={<Signup onLogin={verifyUser} />}
+        />
 
         {/* Protected User Routes */}
         <Route
